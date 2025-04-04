@@ -51,20 +51,3 @@ if __name__ == "__main__":
     opp_difficulty = input("Opponent difficulty (please type the number that corresponds with the level you would like):\nEasy(1)\tIntermediate(2)\tExpert(3): ")
 
     show(game_board)
-
-3
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
