@@ -65,3 +65,11 @@ def get_winner(board):
         for col in range(7 - 3):
             if board[row][col] == board[row + 1][col + 1] == board[row + 2][col + 2] == board[row + 3][col + 3] != " ":
                 return board[row][col]
+
+    # Check for tie or incomplete game
+    for row in range(6):
+        for col in range(7):
+            if board[row][col] == " ":
+                return None        
+    return "T"
+
