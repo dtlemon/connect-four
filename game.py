@@ -52,7 +52,19 @@ if __name__ == "__main__":
 
     show(game_board)
 
-3
+    #Creates function for dropping a piece into the Connect Four board
+    def drop_piece(board, column, player_symbol):
+        for row in reversed(range(6)):
+            if board[row][column] == " ":
+                board[row][column] = player_symbol
+                return row
+        return -1
+    
+    #Function that checks the board for empty spaces, which returns what moves are valid
+    def get_valid_moves(board):
+        return [x for x in range(7) if board[0][x] == " "]
+
+
 
 
 
