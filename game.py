@@ -149,6 +149,26 @@ def expert_agent(board):
             temp_board[move[1]][move[0]] = player
             if get_winner(temp_board) == player:
                 return move if player == "X" else move 
+    
+    class Node:
+        def __init__(self, board, move=None, parent=None):
+            # Copy of board
+            self.board = [row[:] for row in board]  
+            # Last move
+            self.move = move  
+            # Assign parent and child nodes which are all different game states
+            self.parent = parent  
+            self.children = []  
+            # Number of times this node has been visited
+            self.visits = 0  
+            # Number of wins from this board/node
+            self.wins = 0  
+
+        # Check to see if all possible moves have been expanded
+        def is_fully_expanded(self):
+            return len(self.children) == len(get_legal_moves(self.board))
+        
+
 
 if __name__ == "__main__":
     player = input("Enter player name: ")
