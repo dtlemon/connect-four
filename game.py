@@ -121,25 +121,26 @@ def get_winner(board):
   
 #Creates function for dropping a piece into the Connect Four board
 def drop_piece(board, column, player_symbol):
-   for row in reversed(range(6)):
-     if board[row][column] == " ":
-       board[row][column] = player_symbol
-         return row
+    for row in reversed(range(6)):
+        if board[row][column] == " ":
+            board[row][column] = player_symbol
+            return row
     return -1
-  
-def random_agent(board):
+
+def easy_agent(board):
     """
     Random Agent
 
     Very basic agent that simply selects a random legal move
     """
 
-   while True:
-       x = random.randint(0, 7)
-       y = random.randint(0, 6)
+    while True:
+        x = random.randint(0, 7)
+        y = random.randint(0, 6)
 
-       if board[y][x] == " ":
-           return (x, y)
+        if board[y][x] == " ":
+            return (x, y)
+
 
 if __name__ == "__main__":
     player = input("Enter player name: ")
