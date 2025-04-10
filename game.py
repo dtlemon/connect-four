@@ -1,4 +1,5 @@
 import random
+import math # For Monte Carlo Search
 from itertools import product
 from copy import deepcopy
 
@@ -129,7 +130,7 @@ def drop_piece(board, column, player_symbol):
 
 def easy_agent(board):
     """
-    Random Agent
+    Easy Agent
 
     Very basic agent that simply selects a random legal move
     """
@@ -141,14 +142,21 @@ def easy_agent(board):
             return (x)
 
 def expert_agent(board):
+    """
+    Expert Agent
+
+    Agent is impossible for the user to beat as it plays perfecting through using a monte carlo search tree
+    """
+    
     legal_moves = get_legal_moves(board)
 
+    # If we can win or block a winning move, do that first 
     for move in legal_moves:
         for player in ["X", "O"]:
             temp_board = [row[:] for row in board]
-            temp_board[move[1]][move[0]] = player
+            drop_piece(temp_board, move, player)
             if get_winner(temp_board) == player:
-                return move if player == "X" else move 
+                return move
     
     class Node:
         def __init__(self, board, move=None, parent=None):
@@ -167,6 +175,14 @@ def expert_agent(board):
         # Check to see if all possible moves have been expanded
         def is_fully_expanded(self):
             return len(self.children) == len(get_legal_moves(self.board))
+        
+        # Selection Algorithm - Use Upper Confidence Bound for Trees as selection appraoch
+        def best_child(self, exploration_weight=1.4):
+            return max(
+                self.children,
+                key=lambda child: (child.wins / (child.visits + 1e-6)) +
+                exploration_weight * math.sqrt(math.log(self.visits + 1) / (child.visits + 1e-6))
+            )
         
 
 
