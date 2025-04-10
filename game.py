@@ -201,8 +201,27 @@ def expert_agent(board):
         # If all moves are expanded return none
         return None
     
-    
-
+    # Simulation - simulates random game from a given game state and returns winner
+    def simulate_random_game(board):
+        # Create copy of board and itliaze player to X
+        temp_board = [row[:] for row in board]
+        player = "X"
+        # create infinite loop that will break when game ends
+        while True:
+            # Get all possible moves
+            moves = get_legal_moves(temp_board)
+            # If there are no moves return a tie
+            if not moves:
+                return "T"
+            # Make a random move 
+            move = random.choice(moves)
+            drop_piece(temp_board, move, player)
+            # See if random move won the game
+            winner = get_winner(temp_board)
+            if winner:
+                return winner
+            # Switch to other player and continue game
+            player = "O" if player == "X" else "X"
 
 if __name__ == "__main__":
     player = input("Enter player name: ")
