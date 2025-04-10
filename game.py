@@ -222,6 +222,18 @@ def expert_agent(board):
                 return winner
             # Switch to other player and continue game
             player = "O" if player == "X" else "X"
+    
+    # Backpropagte - updates stats after a simulation
+    def backpropagate(node, result):
+        while node:
+            node.visits += 1
+            if result == "X":
+                node.wins += 1
+            elif result == "O":
+                node.wins -= 1
+            node = node.parent
+
+    
 
 if __name__ == "__main__":
     player = input("Enter player name: ")
