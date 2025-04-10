@@ -184,6 +184,24 @@ def expert_agent(board):
                 exploration_weight * math.sqrt(math.log(self.visits + 1) / (child.visits + 1e-6))
             )
         
+    # Expansion - See new possible game states for a given move
+    def expand_node(node):
+        # Get all moves
+        legal_moves = get_legal_moves(node.board)
+        # Get moves already explored
+        existing_moves = {child.move for child in node.children}
+        # Find an unexplored move and add child nodes (new game states) to it
+        for move in legal_moves:
+            if move not in existing_moves:
+                new_board = [row[:] for row in node.board]
+                drop_piece(new_board, move, "X")
+                child_node = Node(new_board, move, node)
+                node.children.append(child_node)
+                return child_node
+        # If all moves are expanded return none
+        return None
+    
+    
 
 
 if __name__ == "__main__":
