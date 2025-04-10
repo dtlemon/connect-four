@@ -233,7 +233,29 @@ def expert_agent(board):
                 node.wins -= 1
             node = node.parent
 
-    
+    # Function that uses Monte Carlo Search Tree class to determine best move
+    def mcts(board, iterations):
+        root = Node(board)
+        for _ in range(iterations):
+            node = root
+            # Selection: Traverse down the tree using best move
+            while node.is_fully_expanded() and node.children:
+                node = node.best_child()
+            # Expansion: If node (move) is not fully expanded, add a new child (game state)
+            if not node.is_fully_expanded():
+                node = expand_node(node)
+            # Simulation: Play a random game from this state
+            result = simulate_random_game(node.board)
+            # Backpropagation: Update the tree based on the result
+            backpropagate(node, result)
+        # If no children exist, pick a random legal move
+        if not root.children:
+            legal_moves = get_legal_moves(board)
+            return random.choice(legal_moves) if legal_moves else None
+        # Choose the best move based on visit count
+        return max(root.children, key=lambda child: child.visits).move
+
+    return mcts(board, iterations=100)
 
 if __name__ == "__main__":
     player = input("Enter player name: ")
