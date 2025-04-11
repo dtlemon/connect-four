@@ -1,4 +1,5 @@
 import random
+import math # For Monte Carlo Search
 from itertools import product
 from copy import deepcopy
 
@@ -129,7 +130,7 @@ def drop_piece(board, column, player_symbol):
 
 def easy_agent(board):
     """
-    Random Agent
+    Easy Agent
 
     Very basic agent that simply selects a random legal move
     """
@@ -141,14 +142,120 @@ def easy_agent(board):
             return (x)
 
 def expert_agent(board):
+    """
+    Expert Agent
+
+    Agent is impossible for the user to beat as it plays perfecting through using a monte carlo search tree
+    """
+    
     legal_moves = get_legal_moves(board)
 
+    # If we can win or block a winning move, do that first 
     for move in legal_moves:
         for player in ["X", "O"]:
             temp_board = [row[:] for row in board]
-            temp_board[move[1]][move[0]] = player
+            drop_piece(temp_board, move, player)
             if get_winner(temp_board) == player:
-                return move if player == "X" else move 
+                return move
+    
+    class Node:
+        def __init__(self, board, move=None, parent=None):
+            # Copy of board
+            self.board = [row[:] for row in board]  
+            # Last move
+            self.move = move  
+            # Assign parent and child nodes which are all different game states
+            self.parent = parent  
+            self.children = []  
+            # Number of times this node has been visited
+            self.visits = 0  
+            # Number of wins from this board/node
+            self.wins = 0  
+
+        # Check to see if all possible moves have been expanded
+        def is_fully_expanded(self):
+            return len(self.children) == len(get_legal_moves(self.board))
+        
+        # Selection Algorithm - Use Upper Confidence Bound for Trees as selection appraoch
+        def best_child(self, exploration_weight=1.4):
+            return max(
+                self.children,
+                key=lambda child: (child.wins / (child.visits + 1e-6)) +
+                exploration_weight * math.sqrt(math.log(self.visits + 1) / (child.visits + 1e-6))
+            )
+        
+    # Expansion - See new possible game states for a given move
+    def expand_node(node):
+        # Get all moves
+        legal_moves = get_legal_moves(node.board)
+        # Get moves already explored
+        existing_moves = {child.move for child in node.children}
+        # Find an unexplored move and add child nodes (new game states) to it
+        for move in legal_moves:
+            if move not in existing_moves:
+                new_board = [row[:] for row in node.board]
+                drop_piece(new_board, move, "X")
+                child_node = Node(new_board, move, node)
+                node.children.append(child_node)
+                return child_node
+        # If all moves are expanded return none
+        return None
+    
+    # Simulation - simulates random game from a given game state and returns winner
+    def simulate_random_game(board):
+        # Create copy of board and itliaze player to X
+        temp_board = [row[:] for row in board]
+        player = "X"
+        # create infinite loop that will break when game ends
+        while True:
+            # Get all possible moves
+            moves = get_legal_moves(temp_board)
+            # If there are no moves return a tie
+            if not moves:
+                return "T"
+            # Make a random move 
+            move = random.choice(moves)
+            drop_piece(temp_board, move, player)
+            # See if random move won the game
+            winner = get_winner(temp_board)
+            if winner:
+                return winner
+            # Switch to other player and continue game
+            player = "O" if player == "X" else "X"
+    
+    # Backpropagte - updates stats after a simulation
+    def backpropagate(node, result):
+        while node:
+            node.visits += 1
+            if result == "X":
+                node.wins += 1
+            elif result == "O":
+                node.wins -= 1
+            node = node.parent
+
+    # Function that uses Monte Carlo Search Tree class to determine best move
+    def mcts(board, iterations):
+        root = Node(board)
+        for _ in range(iterations):
+            node = root
+            # Selection: Traverse down the tree using best move
+            while node.is_fully_expanded() and node.children:
+                node = node.best_child()
+            # Expansion: If node (move) is not fully expanded, add a new child (game state)
+            if not node.is_fully_expanded():
+                node = expand_node(node)
+            # Simulation: Play a random game from this state
+            result = simulate_random_game(node.board)
+            # Backpropagation: Update the tree based on the result
+            backpropagate(node, result)
+        # If no children exist, pick a random legal move
+        if not root.children:
+            legal_moves = get_legal_moves(board)
+            return random.choice(legal_moves) if legal_moves else None
+        # Choose the best move based on visit count
+        return max(root.children, key=lambda child: child.visits).move
+
+    return mcts(board, iterations=100)
 
 if __name__ == "__main__":
     player = input("Enter player name: ")
