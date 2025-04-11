@@ -133,6 +133,8 @@ def easy_agent(board):
     Easy Agent
 
     Very basic agent that simply selects a random legal move
+
+    Returns a column value
     """
 
     while True:
@@ -140,6 +142,45 @@ def easy_agent(board):
 
         if board[x] == " ":
             return (x)
+
+def intermediate_agent(board):
+    """
+    Intermediate Agent
+
+    Plays a piece that has an opportunity to get 4 in a row
+    If it gets blocked, starts a new column
+
+    Returns (x, y) for a move to play
+    """
+    legal_moves = get_legal_moves(board)
+
+    if (3, 6) in legal_moves:
+        return (3, 6)
+    
+    # If we can win or block a winning move, do that first 
+    for move in legal_moves:
+        for player in ["X", "O"]:
+            temp_board = [row[:] for row in board]
+            drop_piece(temp_board, move, player)
+            if get_winner(temp_board) == player:
+                return move
+                    
+        # If there are 4 available spots in a column, do that
+        for x, y in move:
+            if y > 2:
+                return move
+        # If there are 4 available spots in a row, do that
+            elif (x + 1, y) in legal_moves and (x + 2, y) in legal_moves:
+                return moves if (x + 3, y) in legal_moves
+            elif (x - 1, y) in legal_moves and (x - 2, y) in legal_moves:
+                return moves if (x - 3, y) in legal_moves
+                
+    # If no way to win, return random move
+        # Need to adjust this to return a full move, or the rest to return just a column
+#     x = random.randint(0, 7)
+# 
+#     if board[x] == " ":
+#         return (x)
 
 def expert_agent(board):
     """
