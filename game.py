@@ -140,6 +140,46 @@ def easy_agent(board):
         if board[x] == " ":
             return (x)
 
+def hard_agent(board, depth, maximizing, highest, lowest):
+    winner = get_winner(board)
+    if winner == "X":
+        return 1
+    elif winner == "O":
+        return -1
+    elif winner == "T":
+        return 0
+    
+    if maximizing:
+        max_eval = float('-inf')
+        for col in get_legal_moves(board):
+            # Find first empty row in this column (bottom-up)
+            for row in reversed(range(6)):
+                if board[row][col] == " ":
+                    board[row][col] = "X"
+                    eval = hard_agent(board, depth + 1, False, highest, lowest)
+                    board[row][col] = " "
+                    max_eval = max(max_eval, eval)
+                    highest = max(highest, eval)
+                    break  # Done with this column
+            if lowest <= highest:
+                break
+        return max_eval
+    
+    else:
+        min_eval = float('inf')
+        for col in get_legal_moves(board):
+            for row in reversed(range(6)):
+                if board[row][col] == " ":
+                    board[row][col] = "O"
+                    eval = hard_agent(board, depth + 1, True, highest, lowest)
+                    board[row][col] = " "
+                    min_eval = min(min_eval, eval)
+                    lowest = min(lowest, eval)
+                    break
+            if lowest <= highest:
+                break
+        return min_eval
+
 def expert_agent(board):
     legal_moves = get_legal_moves(board)
 
