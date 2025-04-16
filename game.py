@@ -156,7 +156,7 @@ def expert_agent(board):
             temp_board = [row[:] for row in board]
             drop_piece(temp_board, move, player)
             if get_winner(temp_board) == player:
-                return move
+                return move[0]
     
     class Node:
         def __init__(self, board, move=None, parent=None):
