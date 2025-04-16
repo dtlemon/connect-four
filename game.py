@@ -174,7 +174,7 @@ def intermediate_agent(board):
                 if (x + 3, y) in legal_moves:
                     return x 
             elif (x - 1, y) in legal_moves and (x - 2, y) in legal_moves:
-                 if (x - 3, y) in legal_moves:
+                if (x - 3, y) in legal_moves:
                     return x
         # If no way to win, return random move
         else:
