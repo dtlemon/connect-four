@@ -171,9 +171,11 @@ def intermediate_agent(board):
                 return x
         # If there are 4 available spots in a row with O, do that
             elif (x + 1, y) in legal_moves and (x + 2, y) in legal_moves:
-                return x if (x + 3, y) in legal_moves
+                if (x + 3, y) in legal_moves:
+                    return x 
             elif (x - 1, y) in legal_moves and (x - 2, y) in legal_moves:
-                return x if (x - 3, y) in legal_moves
+                 if (x - 3, y) in legal_moves:
+                    return x
         # If no way to win, return random move
         else:
             x = random.randint(0, 7)
