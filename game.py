@@ -133,6 +133,8 @@ def easy_agent(board):
     Easy Agent
 
     Very basic agent that simply selects a random legal move
+
+    Returns a column value
     """
 
     while True:
@@ -140,6 +142,45 @@ def easy_agent(board):
 
         if board[x] == " ":
             return (x)
+
+def intermediate_agent(board):
+    """
+    Intermediate Agent
+
+    Plays a piece that has an opportunity to get 4 in a row
+    If it gets blocked, starts a new column
+
+    Returns (x, y) for a move to play
+    """
+    legal_moves = get_legal_moves(board)
+
+    if (3, 6) in legal_moves:
+        return 3
+    
+    # If we can win or block a winning move, do that first 
+    for move in legal_moves:
+        for player in ["X", "O"]:
+            temp_board = [row[:] for row in board]
+            drop_piece(temp_board, move, player)
+            if get_winner(temp_board) == player:
+                return move[0]
+                    
+        # If there are 4 available spots in a column with O, do that
+        for x, y in move:
+            if 2 < y < 5:
+                return x
+        # If there are 4 available spots in a row with O, do that
+            elif (x + 1, y) in legal_moves and (x + 2, y) in legal_moves:
+                return x if (x + 3, y) in legal_moves
+            elif (x - 1, y) in legal_moves and (x - 2, y) in legal_moves:
+                return x if (x - 3, y) in legal_moves
+        # If no way to win, return random move
+        else:
+            x = random.randint(0, 7)
+
+            if board[x] == " ":
+                return (x)
+    return -1
 
 # Creates a "hard agent" using a minimax function
 def hard_agent(board, depth, maximizing, highest, lowest):
@@ -316,6 +357,7 @@ def expert_agent(board):
 
 if __name__ == "__main__":
     player = input("Enter player name: ")
-    opp_difficulty = input("Opponent difficulty (please type the number that corresponds with the level you would like):\nEasy(1)\tIntermediate(2)\tExpert(3): ")
+    opp_difficulty = input("Opponent difficulty (please type the number that corresponds with the level you would like):\nEasy(1)\tIntermediate(2)\tHard(3)\tExpert(4): ")
+
+    # show(game_board)
     
-    show(game_board)
