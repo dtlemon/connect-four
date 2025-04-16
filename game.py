@@ -141,6 +141,63 @@ def easy_agent(board):
         if board[x] == " ":
             return (x)
 
+# Creates a "hard agent" using a minimax function
+def hard_agent(board, depth, maximizing, highest, lowest):
+    # Returns a value for what the outcome of the winner is
+    winner = get_winner(board)
+    if winner == "X":
+        return 1
+    elif winner == "O":
+        return -1
+    elif winner == "T":
+        return 0
+    
+    if maximizing:
+        # Starts with lowest possible value for maximizing score
+        max_eval = float('-inf')
+        # Loop to look for all valid columns available on board
+        for col in get_legal_moves(board):
+            # Find first empty row in this column (bottom-up)
+            for row in reversed(range(6)):
+                # Simulate move to find best possible move
+                if board[row][col] == " ":
+                    board[row][col] = "X"
+                    # Looks 3 moves ahead on the board
+                    eval = hard_agent(board, depth + 3, False, highest, lowest)
+                    # Backtracks so that we can evaluate all options
+                    board[row][col] = " "
+                    max_eval = max(max_eval, eval)
+                    # Update highest possible score
+                    highest = max(highest, eval)
+                    break
+            # If minimizer has a better option, stop evaluating
+            if lowest <= highest:
+                break
+        # Return the best score
+        return max_eval
+    
+    else:
+        # Starts with highest possible value for minimizing score
+        min_eval = float('inf')
+        # Loops through all valid columns
+        for col in get_legal_moves(board):
+            for row in reversed(range(6)):
+                # Simulates minimizing piece
+                if board[row][col] == " ":
+                    board[row][col] = "O"
+                    # Looks 3 moves ahead on the board, next call is maximizer's turn
+                    eval = hard_agent(board, depth + 3, True, highest, lowest)
+                    board[row][col] = " "
+                    # Keeps track of lowest evaluation so far
+                    min_eval = min(min_eval, eval)
+                    lowest = min(lowest, eval)
+                    break
+            # If minimizer is worse, stop evaluating
+            if lowest <= highest:
+                break
+        # Return lowest possible score
+        return min_eval
+
 def expert_agent(board):
     """
     Expert Agent
