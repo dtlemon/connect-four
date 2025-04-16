@@ -260,5 +260,5 @@ def expert_agent(board):
 if __name__ == "__main__":
     player = input("Enter player name: ")
     opp_difficulty = input("Opponent difficulty (please type the number that corresponds with the level you would like):\nEasy(1)\tIntermediate(2)\tExpert(3): ")
-
+    
     show(game_board)
