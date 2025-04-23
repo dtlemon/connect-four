@@ -8,16 +8,11 @@ game_board = [[' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' '
     [' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ']]
 
 def get_legal_moves(board):
-    """
-    >>> get_legal_moves([['X','X','X','X','X','X','X'],['X',' ','X','X','X','X','X'],['X',' ','X','X','X','X','X'],['X',' ','X','X','X','X','X'],['X',' ','X','X','X','X','X'],['X',' ','X','X','X','X','X']])
-    [(1, 1), (1, 2), (1, 3), (1, 4), (1, 5)]
-
-    >>> len(get_legal_moves([[' ',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ',' '],[' ',' ',' ',' ',' ',' ',' ']]))
-    42
-
-    """
-
-    return [(x, y) for x, y in product(range(7), range(6)) if board[y][x] == " "]
+    legal_moves = []
+    for col in range(7):
+        if board[0][col] == " ":
+            legal_moves.append(col)
+    return legal_moves
 
 def show(board):
     """
@@ -138,9 +133,9 @@ def easy_agent(board):
     """
 
     while True:
-        x = random.randint(0, 7)
+        x = random.randint(0, 6)
 
-        if board[x] == " ":
+        if board[0][x] == " ":
             return (x)
 
 def intermediate_agent(board):
@@ -357,9 +352,77 @@ def expert_agent(board):
 
     return mcts(board, iterations=100)
 
+def play_game(difficulty, board):
+    piece = input("Please select a column (0-6): ")
+    drop_piece(board, int(piece), "O")
+    match difficulty:
+        case "1":
+            return easy_agent(board)
+        case "2":
+            return intermediate_agent(board)
+        case "3":
+            best_score = float("-inf")
+            best_col = None
+            for col in range(7):
+                temp_board = [row[:] for row in board]
+                row = drop_piece(temp_board, col, "O")
+                if row != -1:
+                    score = hard_agent(temp_board, 0, False, float("-inf"), float("inf"))
+                    if score > best_score:
+                        best_score = score
+                        best_col = col
+            return best_col
+        case "4":
+            return expert_agent(board)
+        case _:
+            print("Invalid difficulty selected. Defaulting to Hard.")
+            return hard_agent(board)
+
+def main_game_loop():
+    board = [[' ' for _ in range(7)] for _ in range(6)]
+    show(board)
+
+    while True:
+        try:
+            col = int(input("Enter column (0-6): "))
+            if not 0 <= col <= 6:
+                print("Invalid column. Try again.")
+                continue
+        except ValueError:
+            print("Please enter a valid number.")
+            continue
+
+        row = drop_piece(board, col, "X")
+        if row == -1:
+            print("Column full. Try again.")
+            continue
+
+        show(board)
+        result = get_winner(board)
+        if result == "X":
+            print("You win!")
+            break
+        elif result == "T":
+            print("It's a tie!")
+            break
+
+        ai_col = play_game(opp_difficulty, board)
+        drop_piece(board, ai_col, "O")
+        print(f"AI chose column {ai_col}")
+        show(board)
+
+        result = get_winner(board)
+        if result == "O":
+            print("AI wins!")
+            break
+        elif result == "T":
+            print("It's a tie!")
+            break
+
 if __name__ == "__main__":
     player = input("Enter player name: ")
     opp_difficulty = input("Opponent difficulty (please type the number that corresponds with the level you would like):\nEasy(1)\tIntermediate(2)\tHard(3)\tExpert(4): ")
+    show(game_board)
+    play_game(opp_difficulty, game_board)
 
-    # show(game_board)
-    
+           
