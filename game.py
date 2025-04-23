@@ -247,11 +247,14 @@ def expert_agent(board):
 
     # If we can win or block a winning move, do that first 
     for move in legal_moves:
-        for player in ["X", "O"]:
-            temp_board = [row[:] for row in board]
-            drop_piece(temp_board, move, player)
-            if get_winner(temp_board) == player:
-                return move[0]
+        temp_board = [row[:] for row in board]
+        drop_piece(temp_board, move, "O")
+        if get_winner(temp_board) == "O":
+            return move
+        temp_board = [row[:] for row in board]
+        drop_piece(temp_board, move, "X")
+        if get_winner(temp_board) == "X":
+            return move
     
     class Node:
         def __init__(self, board, move=None, parent=None):
@@ -353,8 +356,6 @@ def expert_agent(board):
     return mcts(board, iterations=100)
 
 def play_game(difficulty, board):
-    piece = input("Please select a column (0-6): ")
-    drop_piece(board, int(piece), "O")
     match difficulty:
         case "1":
             return easy_agent(board)
@@ -392,7 +393,7 @@ def main_game_loop():
             print("Please enter a valid number.")
             continue
 
-        row = drop_piece(board, col, "X")
+        row = drop_piece(board, col, "O")
         if row == -1:
             print("Column full. Try again.")
             continue
@@ -407,13 +408,16 @@ def main_game_loop():
             break
 
         ai_col = play_game(opp_difficulty, board)
-        drop_piece(board, ai_col, "O")
+        drop_piece(board, ai_col, "X")
         print(f"AI chose column {ai_col}")
         show(board)
 
         result = get_winner(board)
         if result == "O":
-            print("AI wins!")
+            print("You win!")
+            break
+        elif result == "X":
+            print("The AI wins!")
             break
         elif result == "T":
             print("It's a tie!")
@@ -422,7 +426,5 @@ def main_game_loop():
 if __name__ == "__main__":
     player = input("Enter player name: ")
     opp_difficulty = input("Opponent difficulty (please type the number that corresponds with the level you would like):\nEasy(1)\tIntermediate(2)\tHard(3)\tExpert(4): ")
-    show(game_board)
-    play_game(opp_difficulty, game_board)
+    main_game_loop()
 
-           
