@@ -424,5 +424,3 @@ if __name__ == "__main__":
     opp_difficulty = input("Opponent difficulty (please type the number that corresponds with the level you would like):\nEasy(1)\tIntermediate(2)\tHard(3)\tExpert(4): ")
     show(game_board)
     play_game(opp_difficulty, game_board)
-
-           
