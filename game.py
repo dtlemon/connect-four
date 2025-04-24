@@ -150,7 +150,7 @@ def intermediate_agent(board):
     Plays a piece that has an opportunity to get 4 in a row
     If it gets blocked, starts a new column
 
-    Returns (x, y) for a move to play
+    Returns column for a move to play
     """
     legal_moves = get_legal_moves(board)
 
@@ -242,7 +242,6 @@ def hard_agent(board, depth, maximizing, highest, lowest):
         # Return lowest possible score
         return min_eval
 
-
 def expert_agent(board):
     """
     Expert Agent
@@ -255,12 +254,13 @@ def expert_agent(board):
     # If we can win or block a winning move, do that first 
     for move in legal_moves:
         temp_board = [row[:] for row in board]
-        drop_piece(temp_board, move, "O")
-        if get_winner(temp_board) == "O":
-            return move
-        temp_board = [row[:] for row in board]
         drop_piece(temp_board, move, "X")
         if get_winner(temp_board) == "X":
+            return move
+    for move in legal_moves:
+        temp_board = [row[:] for row in board]
+        drop_piece(temp_board, move, "O")
+        if get_winner(temp_board) == "O":
             return move
     
     class Node:
@@ -311,9 +311,9 @@ def expert_agent(board):
     
     # Simulation - simulates random game from a given game state and returns winner
     def simulate_random_game(board, current_player):
-        # Create copy of board and itliaze player to X
+        # Create copy of board 
         temp_board = [row[:] for row in board]
-        player = current_player
+        player = "X" if current_player == "O" else "O"
         # create infinite loop that will break when game ends
         while True:
             # Get all possible moves
@@ -363,7 +363,7 @@ def expert_agent(board):
         # Choose the best move based on visit count
         return max(root.children, key=lambda child: child.visits).move
 
-    return mcts(board, iterations=100)
+    return mcts(board, iterations=500)
 
 def play_game(difficulty, board):
     match difficulty:
@@ -386,8 +386,8 @@ def play_game(difficulty, board):
         case "4":
             return expert_agent(board)
         case _:
-            print("Invalid difficulty selected. Defaulting to Hard.")
-            return hard_agent(board)
+            print("Invalid difficulty selected. Defaulting to Expert.")
+            return expert_agent(board)
 
 def main_game_loop():
     board = [[' ' for _ in range(7)] for _ in range(6)]
@@ -410,7 +410,7 @@ def main_game_loop():
 
         show(board)
         result = get_winner(board)
-        if result == "X":
+        if result == "O":
             print("You win!")
             break
         elif result == "T":
@@ -423,10 +423,7 @@ def main_game_loop():
         show(board)
 
         result = get_winner(board)
-        if result == "O":
-            print("You win!")
-            break
-        elif result == "X":
+        if result == "X":
             print("The AI wins!")
             break
         elif result == "T":
