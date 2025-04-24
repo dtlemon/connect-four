@@ -5,7 +5,7 @@ Connect 4 agent that allows a user to play connect 4 against an agent at a
 selected difficulty level.  We always allow the user to go first rather than 
 the agent.
 
-The user can select easy, intermeidate, hard or expert difficulty.
+The user can select easy, intermeidate, or expert difficulty.
 
 For the easy difficulty level, the agent with make completely random moves. 
 At the intermediate difficulty level, the agent takes a hueristic appraoch to 
