@@ -8,6 +8,11 @@ game_board = [[' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' '
     [' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ']]
 
 def get_legal_moves(board):
+    """
+    Returns a list of columns where a move can be legally made.
+    A move is legal if the top cell in the column is empty.
+    """
+
     legal_moves = []
     for col in range(7):
         if board[0][col] == " ":
@@ -145,38 +150,39 @@ def intermediate_agent(board):
     Plays a piece that has an opportunity to get 4 in a row
     If it gets blocked, starts a new column
 
-    Returns (x, y) for a move to play
+    Returns column for a move to play
     """
     legal_moves = get_legal_moves(board)
 
-    if (3, 6) in legal_moves:
-        return 3
-    
     # If we can win or block a winning move, do that first 
     for move in legal_moves:
         for player in ["X", "O"]:
             temp_board = [row[:] for row in board]
             drop_piece(temp_board, move, player)
             if get_winner(temp_board) == player:
-                return move[0]
+                return move
                     
-        # If there are 4 available spots in a column with O, do that
-        for x, y in move:
-            if 2 < y < 5:
-                return x
-        # If there are 4 available spots in a row with O, do that
-            elif (x + 1, y) in legal_moves and (x + 2, y) in legal_moves:
-                if (x + 3, y) in legal_moves:
-                    return x 
-            elif (x - 1, y) in legal_moves and (x - 2, y) in legal_moves:
-                 if (x - 3, y) in legal_moves:
-                    return x
-        # If no way to win, return random move
-        else:
-            x = random.randint(0, 7)
+    # Try to create a vertical, horizontal, or diagonal threat
+    for move in legal_moves:
+        temp_board = [row[:] for row in board]
+        drop_piece(temp_board, move, "X")  # Try the move for the AI (X)
 
-            if board[x] == " ":
-                return (x)
+        # Check if this move creates a vertical "4 in a row" (if possible)
+        for row in range(5, -1, -1):  # Start from the bottom
+            if temp_board[row][move] == " ":
+                if row <= 2:  
+                    if temp_board[row+1][move] == "X" and temp_board[row+2][move] == "X" and temp_board[row+3][move] == "X":
+                        return move
+
+        # Check if this move creates a horizontal "4 in a row"
+        for row in range(6):
+            for col in range(4):  
+                if temp_board[row][col] == "X" and temp_board[row][col+1] == "X" and temp_board[row][col+2] == "X" and temp_board[row][col+3] == "X":
+                    return move
+
+        # If no winning move, return random move
+        if len(legal_moves) > 0:
+            return random.choice(legal_moves)
     return -1
 
 # Creates a "hard agent" using a minimax function
@@ -240,21 +246,25 @@ def expert_agent(board):
     """
     Expert Agent
 
-    Agent is impossible for the user to beat as it plays perfecting through using a monte carlo search tree
+    Agent plays perfectly through using a monte carlo search tree but is still beatable since the user goes first
     """
     
     legal_moves = get_legal_moves(board)
 
     # If we can win or block a winning move, do that first 
     for move in legal_moves:
-        for player in ["X", "O"]:
-            temp_board = [row[:] for row in board]
-            drop_piece(temp_board, move, player)
-            if get_winner(temp_board) == player:
-                return move[0]
+        temp_board = [row[:] for row in board]
+        drop_piece(temp_board, move, "X")
+        if get_winner(temp_board) == "X":
+            return move
+    for move in legal_moves:
+        temp_board = [row[:] for row in board]
+        drop_piece(temp_board, move, "O")
+        if get_winner(temp_board) == "O":
+            return move
     
     class Node:
-        def __init__(self, board, move=None, parent=None):
+        def __init__(self, board, move=None, parent=None, player = "O"):
             # Copy of board
             self.board = [row[:] for row in board]  
             # Last move
@@ -266,6 +276,8 @@ def expert_agent(board):
             self.visits = 0  
             # Number of wins from this board/node
             self.wins = 0  
+            # Whose turn it is at the particular node
+            self.player = player
 
         # Check to see if all possible moves have been expanded
         def is_fully_expanded(self):
@@ -289,18 +301,19 @@ def expert_agent(board):
         for move in legal_moves:
             if move not in existing_moves:
                 new_board = [row[:] for row in node.board]
-                drop_piece(new_board, move, "X")
-                child_node = Node(new_board, move, node)
+                next_player = "O" if node.player == "X" else "X"
+                drop_piece(new_board, move, node.player)
+                child_node = Node(new_board, move, node, next_player)
                 node.children.append(child_node)
                 return child_node
         # If all moves are expanded return none
         return None
     
     # Simulation - simulates random game from a given game state and returns winner
-    def simulate_random_game(board):
-        # Create copy of board and itliaze player to X
+    def simulate_random_game(board, current_player):
+        # Create copy of board 
         temp_board = [row[:] for row in board]
-        player = "X"
+        player = "X" if current_player == "O" else "O"
         # create infinite loop that will break when game ends
         while True:
             # Get all possible moves
@@ -330,7 +343,7 @@ def expert_agent(board):
 
     # Function that uses Monte Carlo Search Tree class to determine best move
     def mcts(board, iterations):
-        root = Node(board)
+        root = Node(board, player="O")
         for _ in range(iterations):
             node = root
             # Selection: Traverse down the tree using best move
@@ -340,7 +353,7 @@ def expert_agent(board):
             if not node.is_fully_expanded():
                 node = expand_node(node)
             # Simulation: Play a random game from this state
-            result = simulate_random_game(node.board)
+            result = simulate_random_game(node.board, node.player)
             # Backpropagation: Update the tree based on the result
             backpropagate(node, result)
         # If no children exist, pick a random legal move
@@ -350,11 +363,9 @@ def expert_agent(board):
         # Choose the best move based on visit count
         return max(root.children, key=lambda child: child.visits).move
 
-    return mcts(board, iterations=100)
+    return mcts(board, iterations=500)
 
 def play_game(difficulty, board):
-    piece = input("Please select a column (0-6): ")
-    drop_piece(board, int(piece), "O")
     match difficulty:
         case "1":
             return easy_agent(board)
@@ -375,8 +386,8 @@ def play_game(difficulty, board):
         case "4":
             return expert_agent(board)
         case _:
-            print("Invalid difficulty selected. Defaulting to Hard.")
-            return hard_agent(board)
+            print("Invalid difficulty selected. Defaulting to Expert.")
+            return expert_agent(board)
 
 def main_game_loop():
     board = [[' ' for _ in range(7)] for _ in range(6)]
@@ -392,14 +403,14 @@ def main_game_loop():
             print("Please enter a valid number.")
             continue
 
-        row = drop_piece(board, col, "X")
+        row = drop_piece(board, col, "O")
         if row == -1:
             print("Column full. Try again.")
             continue
 
         show(board)
         result = get_winner(board)
-        if result == "X":
+        if result == "O":
             print("You win!")
             break
         elif result == "T":
@@ -407,13 +418,13 @@ def main_game_loop():
             break
 
         ai_col = play_game(opp_difficulty, board)
-        drop_piece(board, ai_col, "O")
+        drop_piece(board, ai_col, "X")
         print(f"AI chose column {ai_col}")
         show(board)
 
         result = get_winner(board)
-        if result == "O":
-            print("AI wins!")
+        if result == "X":
+            print("The AI wins!")
             break
         elif result == "T":
             print("It's a tie!")
@@ -422,5 +433,8 @@ def main_game_loop():
 if __name__ == "__main__":
     player = input("Enter player name: ")
     opp_difficulty = input("Opponent difficulty (please type the number that corresponds with the level you would like):\nEasy(1)\tIntermediate(2)\tHard(3)\tExpert(4): ")
+    main_game_loop()
+
+
     show(game_board)
     play_game(opp_difficulty, game_board)
