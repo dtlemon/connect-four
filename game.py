@@ -185,6 +185,7 @@ def intermediate_agent(board):
             return random.choice(legal_moves)
     return -1
 
+
 def expert_agent(board):
     """
     Expert Agent
